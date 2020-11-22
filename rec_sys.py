@@ -78,3 +78,49 @@ def build_chart(genre, percentile=0.85):
     
  # list movies from genre 'romance'
  build_chart('Romance').head(15)
+
+'''
+content based recommendation
+1. Movie Overviews and Taglines
+2. Movie Cast, Crew, Keywords and Genre
+'''
+links_small = pd.read_csv('sample_data/links_small.csv')
+links_small = links_small[links_small['tmdbId'].notnull()]['tmdbId'].astype('int')
+
+# accessing small movies dataset woth 9000+ data
+movie_data = movie_data.drop([19730, 29503, 35587])
+movie_data['id'] = movie_data['id'].astype('int')
+small_md = movie_data[movie_data['id'].isin(links_small)]
+small_md.shape
+
+# description based recommender
+small_md['tagline'] = small_md['tagline'].fillna('')
+small_md['description'] = small_md['overview'] + small_md['tagline']
+small_md['description'] = small_md['description'].fillna('')
+tf = TfidfVectorizer(analyzer='word',ngram_range=(1, 2),min_df=0, stop_words='english')
+tfidf_matrix = tf.fit_transform(small_md['description'])
+tfidf_matrix.shape
+
+# finding the similarity between movies using cosine similarity
+cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
+cosine_sim[0]
+
+# listing the movies based on the cosine similarity scores
+
+# let us list movies similar to the given titles
+small_md = small_md.reset_index()
+titles = small_md['title']
+indices = pd.Series(small_md.index, index=small_md['title'])
+
+def get_recommendations(title):
+    idx = indices[title]
+    sim_scores = list(enumerate(cosine_sim[idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    sim_scores = sim_scores[1:31]
+    movie_indices = [i[0] for i in sim_scores]
+    return titles.iloc[movie_indices]
+
+# listinf movies that are having content related to ' The Godfather'
+get_recommendations('The Godfather').head(10)
+# listing movies that are having content related to 'The Dark Knight'
+get_recommendations('The Dark Knight').head(10)
