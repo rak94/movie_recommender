@@ -71,7 +71,7 @@ def build_chart(genre, percentile=0.85):
     qualified['vote_count'] = qualified['vote_count'].astype('int')
     qualified['vote_average'] = qualified['vote_average'].astype('int')
     
-    qualified['wr'] = qualified.apply(lambda x: (x['vote_count']/(x['vote_count']+movie) * x['vote_average']) + (movie/(movie+x['vote_count']) * c), axis=1)
+    qualified['wr'] = qualified.apply(lambda x: (x['vote_count']/(x['vote_count']+min_votes) * x['vote_average']) + (min_votes/(min_votes+x['vote_count']) * c), axis=1)
     qualified = qualified.sort_values('wr', ascending=False).head(250)
     
     return qualified
