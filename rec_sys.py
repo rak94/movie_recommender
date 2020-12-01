@@ -50,11 +50,11 @@ feature = feature.sort_values('wr', ascending=False).head(250)
 feature.head(15)
 
 # function to build charts for specific genres
-# lists the top 15 movies in a spefic genre
 s = movie_data.apply(lambda x: pd.Series(x['genres']),axis=1).stack().reset_index(level=1, drop=True)
 s.name = 'genre'
 gen_movie_data = movie_data.drop('genres', axis=1).join(s)
 
+# lists the top 15 movies in a spefic genre
 def build_chart(genre, percentile=0.85):
     df = gen_movie_data[gen_movie_data['genre'] == genre]
     total_votes= df[df['vote_count'].notnull()]['vote_count'].astype('int')
