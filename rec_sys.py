@@ -45,8 +45,8 @@ def weighted_rating(x):
     return (v/(v+min_votes) * avg_rating) + (min_votes/(min_votes+v) * c)
     
 # to list top rated movies (250)   
-feature['wr'] = feature.apply(weighted_rating, axis=1)
-feature = feature.sort_values('wr', ascending=False).head(250)
+feature['weighted_rate'] = feature.apply(weighted_rating, axis=1)
+feature = feature.sort_values('weighted_rate', ascending=False).head(250)
 feature.head(15)
 
 # function to build charts for specific genres
@@ -66,8 +66,8 @@ def build_chart(genre, percentile=0.85):
     feature['vote_count'] = feature['vote_count'].astype('int')
     feature['vote_average'] = feature['vote_average'].astype('int')
     
-    feature['wr'] = feature.apply(lambda x: (x['vote_count']/(x['vote_count']+min_votes) * x['vote_average']) + (min_votes/(min_votes+x['vote_count']) * c), axis=1)
-    feature = feature.sort_values('wr', ascending=False).head(250)
+    feature['weighted_rate'] = feature.apply(lambda x: (x['vote_count']/(x['vote_count']+min_votes) * x['vote_average']) + (min_votes/(min_votes+x['vote_count']) * c), axis=1)
+    feature = feature.sort_values('weighted_rate', ascending=False).head(250)
     
     return feature
     
