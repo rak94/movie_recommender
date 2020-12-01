@@ -4,16 +4,8 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
-from scipy import stats
-from ast import literal_eval
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.metrics.pairwise import linear_kernel, cosine_similarity
-from nltk.stem.snowball import SnowballStemmer
-from nltk.stem.wordnet import WordNetLemmatizer
-from nltk.corpus import wordnet
-from surprise import Reader, Dataset, SVD
-import warnings; warnings.simplefilter('ignore')
 
 # loading movie_metadata file and categorizing by genre
 movie_data = pd.read_csv('sample_data/movies_metadata.csv')
@@ -120,7 +112,6 @@ def get_recommendations(title):
     movie_indices = [i[0] for i in sim_scores]
     return titles.iloc[movie_indices]
 
-# listinf movies that are having content related to ' The Godfather'
-get_recommendations('The Godfather').head(10)
-# listing movies that are having content related to 'The Dark Knight'
-get_recommendations('The Dark Knight').head(10)
+get_recommendations('Forrest Gump').head(10)
+
+get_recommendations('Se7en').head(10)
