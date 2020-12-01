@@ -1,3 +1,5 @@
+import json
+
 #Function to filter movies based on interests entered by the user
 #Function will output the 10 most relevent to the console
 #This function calculates how similar the movies are to the user input by using the ROCK similarity calculation
