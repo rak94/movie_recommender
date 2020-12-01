@@ -117,10 +117,10 @@ indices = pd.Series(small_md.index, index=small_md['title'])
 
 def get_recommendations(title):
     idx = indices[title]
-    sim_scores = list(enumerate(cosine_sim[idx]))
-    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
-    sim_scores = sim_scores[1:31]
-    movie_indices = [i[0] for i in sim_scores]
+    similarity_scores = list(enumerate(cosine_sim[idx]))
+    similarity_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    similarity_scores = sim_scores[1:31]
+    movie_indices = [i[0] for i in similarity_scores]
     return titles.iloc[movie_indices]
 
 # recommends the movies based on the title (other titles - Inception, The Dark Knight, Frozen, Star Wars)
