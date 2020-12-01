@@ -21,11 +21,11 @@ avg_rating is the average rating of the movie
 c is the mean vote across the whole report
 '''
 
-vote_counts = movie_data[movie_data['vote_count'].notnull()]['vote_count'].astype('int')
-vote_averages = movie_data[movie_data['vote_average'].notnull()]['vote_average'].astype('int')
-c = vote_averages.mean()
+total_votes = movie_data[movie_data['vote_count'].notnull()]['vote_count'].astype('int')
+avg_vote = movie_data[movie_data['vote_average'].notnull()]['vote_average'].astype('int')
+c = avg_vote.mean()
 c
-min_votes = vote_counts.quantile(0.95)
+min_votes = total_votes.quantile(0.95)
 min_votes
 
 # categorizing based on release date
@@ -54,8 +54,8 @@ gen_movie_data = movie_data.drop('genres', axis=1).join(s)
 
 def build_chart(genre, percentile=0.85):
     df = gen_movie_data[gen_movie_data['genre'] == genre]
-    vote_counts = df[df['vote_count'].notnull()]['vote_count'].astype('int')
-    vote_averages = df[df['vote_average'].notnull()]['vote_average'].astype('int')
+    total_votes= df[df['vote_count'].notnull()]['vote_count'].astype('int')
+    avg_vote = df[df['vote_average'].notnull()]['vote_average'].astype('int')
     c = vote_averages.mean()
     min_votes = vote_counts.quantile(percentile)
     
