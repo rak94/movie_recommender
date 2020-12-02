@@ -1,0 +1,154 @@
+#this block of code will set a users 10 favorite movies
+
+#import user ratings
+user_ratings = pd.read_csv('sample_data/ratings_small.csv')
+user_ratings.drop(['timestamp'], axis=1, inplace=True)
+#user id used to identify different user ratings
+userId=1
+#stores a users highest rated movie
+fave_movie = ''
+#contains a list of a users favorite movies
+user_movies = []
+#user id start at 1 and so does this array for simplicity
+user_movies.append('')
+#contains user ratings used in calculations
+highest_rating = 0
+current_rating = 0
+#contains a list of a users fave movies
+fav_movies = []
+#error rate to catch errors
+errorrate = 0
+#iteration variable
+i=0
+#loop through each tuple to set each users 10 favorite movies
+#these will be used later to calculate how similar each user is to one another
+while i < user_ratings.shape[0]:
+    #try to load each tuple, if any problems occur skip tuple
+    try:
+        #if there is a different user, set variables to account for the difference
+        if(user_ratings.iloc[i]['userId']!=userId):
+            #append the users list of favorite movies to the user_movies list
+            user_movies.append(fav_movies.copy())
+            #clear the current users favorite movie list
+            fav_movies.clear()
+            #resets highest rating
+            highest_rating = 0
+            #increments to next user
+            userId+=1
+            #deincrements i to the previous tuple so that the calculations will include the current tuple
+            i-=1
+            
+        else:
+            #gets the users rating of the current movie
+            current_rating = user_ratings.iloc[i]['rating']
+            #sets the first 10 ratings as the users default favorite movies
+            if(len(fav_movies)<10):
+                #if the movie id matches a title id in the movie metadata dataset, append this to the movie list
+                #this is to ensure there are no empty movie titles
+                if movie_data.loc[movie_data.id == user_ratings.iloc[i]['movieId']].title.values:
+                    fav_movies.append([user_ratings.iloc[i]['movieId'], current_rating])
+            
+            else:  
+                #if the movie id matches a title id in the movie metadata dataset, append this to the movie list
+                #this is to ensure there are no empty movie titles
+                if movie_data.loc[movie_data.id == user_ratings.iloc[i]['movieId']].title.values:
+                    #set iteration variable
+                    j=0
+                    #loop through each favorite movie to check if the current movie has a higher rating than one currently
+                    #on the list
+                    while j < 10:
+                        #if the current movie rating is higher than the movie on the list, replace with the new tuple
+                        if(fav_movies[j][1]<current_rating ):
+                            #Sets new favorite movie and rating
+                            fav_movie = user_ratings.iloc[i]['movieId']
+                            highest_rating = current_rating
+                            #if a tuple has been replaced, use temporary variables
+                            if replace:
+                                #sets the replacement variables
+                                replacement_id = temp_id
+                                replacement_rating = current_rating
+                                #sets temp data for future iterations
+                                temp_id = fav_movies[j][0]
+                                current_rating = fav_movies[j][1]
+                                #sets new values for favorite movie array
+                                fav_movies[j][0] = replacement_id
+                                fav_movies[j][1] = replacement_rating
+                            #if a tuple has not been replaced, replace lower rated movie with current movie
+                            else:
+                                #sets temp data for future use
+                                temp_id = fav_movies[j][0]
+                                current_rating = fav_movies[j][1]
+                                #sets new values for favorite movie array
+                                fav_movies[j][0] = fav_movie
+                                fav_movies[j][1] = highest_rating
+                                #set replace to true to allow for additional tuple checks
+                                replace = True
+                        j+=1
+                    #resets replace variable
+                    replace=False  
+    #catches any error that occurs when accessing dataset
+    except:
+        errorrate+=1
+    i+=1
+
+#this block of code will calculate how similar each user is to one another
+
+#similarity holds the similarity calculations between users
+smilarity = 0
+#best will hold the highest similarity result for the users
+best = 0
+#holds the id of the user with the most similar movie preferences
+closest_user = 0
+#holds the best user pairs
+best_matches = []
+#start array at 1
+best_matches.append(0)
+#resetting iteration variable
+i=1
+while i<len(user_movies):
+    #resetting iteration variable
+    k=1
+    #resets best variable
+    best = 0
+    #loop through each users and their favorite movies
+    while k < len(user_movies):
+        #finds the intersection of the current users favorite moviess and a different users favorite movies
+        #sets similarity to this calculation
+        simimlarity = np.intersect1d(user_movies[i],user_movies[k])
+        #try to calulate similarity using ROCK similarity methods 
+        try:
+            #set similarity to number of similar elements divided by number of total elements in each favorite movie list
+            simimlarity = float(len(simimlarity)/(len(user_movies[k]) + len(user_movies[i]) - len(simimlarity)))
+        #catches calculations such as division by 0    
+        except:
+            #sets similarity to 0 if an error occurs
+            simimlarity = 0
+        
+        #if the current similarity is better than the previous best and also not the same user id
+        if simimlarity>best and i!=k : 
+            #set best as the new value
+            best = simimlarity
+            #sets the closest user to the current tuple id
+            closest_user=k
+        k+=1   
+    #adds the best match to the array
+    best_matches.append(closest_user)
+    i+=1
+
+#This method will print the list of recommended movies for the user
+#the user id is input as a variable and used to find which user matches their interests
+def collabFilter(userId):
+    #iteration variable
+    i = 0
+    #print line describing user input
+    print('User #', userId, ' would like:')
+    #goes through each item on the other users favorite movie list
+    while i < len(user_movies[best_matches[userId]]):
+        #prints each movie title the best match user likes
+        print(movie_data.loc[movie_data.id == user_movies[best_matches[userId]][i][0]].title.values)
+        i+=1
+    #prints other user that list was pulled from
+    print('Using user #', best_matches[userId], ' similar preferences')
+collabFilter(352)
+print()
+collabFilter(314)
