@@ -62,7 +62,7 @@ def build_chart(genre, percentile=0.85):
     total_votes= df[df['vote_count'].notnull()]['vote_count'].astype('int')
     avg_vote = df[df['vote_average'].notnull()]['vote_average'].astype('int')
     c = avg_vote.mean()
-    min_votes = vote_counts.quantile(percentile)
+    min_votes = total_votes.quantile(percentile)
     
     feature = df[(df['vote_count'] >= min_votes) & (df['vote_count'].notnull()) & (df['vote_average'].notnull())][['title', 'year', 'vote_count', 'vote_average', 'popularity']]
     feature['vote_count'] = feature['vote_count'].astype('int')
