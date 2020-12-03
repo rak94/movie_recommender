@@ -125,8 +125,8 @@ indices = pd.Series(small_md.index, index=small_md['title'])
 def get_recommendations(title):
     idx = indices[title]
     similarity_scores = list(enumerate(cosine_sim[idx]))
-    similarity_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
-    similarity_scores = sim_scores[1:31]
+    similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
+    similarity_scores = similarity_scores[1:31]
     movie_indices = [i[0] for i in similarity_scores]
     return titles.iloc[movie_indices]
 
