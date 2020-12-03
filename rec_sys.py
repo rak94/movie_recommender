@@ -4,6 +4,8 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
+from ast import literal_eval
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.metrics.pairwise import linear_kernel, cosine_similarity
 
@@ -72,8 +74,13 @@ def build_chart(genre, percentile=0.85):
     return feature
     
  # list movies from genre 'Romance' (other genres - Action, Adventure, Comedy, Thriller)
- build_chart('Romance').head(15)
+ build_chart('Thriller').head(15)
 
+ # displaying bar graph for average vote counts for a specific genre   
+sns.set_style('white')
+plt.figure(figsize=(10,4))
+feature['vote_count'].hist(bins=70,color='green')
+    
 '''
 content based recommendation
 1. Movie Overviews and Taglines
@@ -127,3 +134,7 @@ def get_recommendations(title):
 get_recommendations('Forrest Gump').head(10)
 
 get_recommendations('Se7en').head(10)
+
+# displaying bar graph for average vote counts for similar titles
+plt.figure(figsize=(10,4))
+movie_data['vote_average'].hist(bins=70,color='purple')
