@@ -147,11 +147,88 @@ plt.figure(figsize=(10,4))
 movie_data['vote_average'].hist(bins=70,color='purple')
 
 
-# In[2]:
+# In[4]:
 
 
-#this block of code will set a users 10 favorite movies
+'''
+Interest based filtering
+Function to filter movies based on interests entered by the user
+This function calculates how similar the movies are to the user input by using the ROCK similarity calculation
+'''
 
+def interestFilter(interests):
+    #load keyword dataset
+    movie_interests = pd.read_csv('sample_data/keywords.csv')
+    #similarity and difference counts used for similarity calculations
+    simCount = 0
+    diffCount = 0
+    #used to determine if a keyword is excluded in a tuple
+    excluded = True
+    #stores the movie id and similarity measument for each tuple
+    similarities = {}
+    #iteration variable
+    i = 0
+    #used to measure tuple load error rate
+    errorrate = 0
+    
+    #loop through each tuple in the dataset
+    while i < movie_interests.shape[0]:
+        #reset counts
+        diffCount = 0
+        simCount = 0
+        
+        #try to load tuple, and turn it into an array of dictionaries
+        try:
+            movieTuple = [movie_interests.iloc[i][1]]
+            res = [json.loads(idx.replace("'", '"')) for idx in movieTuple]   
+        #if tuple fails to properly load or convert, add to errorrate and proceed to next tuple
+        except:
+            errorrate+=1
+         
+        #iteration variable
+        j = 0
+        
+        #iterate through each user input interest
+        while j < len(interests):
+            #reset excluded variable
+            excluded = True
+            #iteration variable
+            k = 0
+            
+            #loop through each keyword in tuple, comparing them to user input variable
+            while k<len(res[0]):
+                #if user input variable equals keyword in movie, add to similar count and indicate the keyword is not excluded
+                if interests[j].lower() == res[0][k]['name'].lower():
+                    excluded = False
+                    simCount += 1
+                k+=1     
+            
+            #if the keyword was excluded in the tuple, add to difference count
+            if(excluded):
+                diffCount+=1
+
+            j+=1
+        
+        #calculates the similarity between user input and the current tuple
+        simCount=simCount/(k+diffCount)
+        #updates the similarity dictionary with the movie id and the similarity rating
+        similarities.update({movie_interests.id[i]:simCount}) 
+        i+=1
+    #turns the similarity dictionary into a list to be reverse sorted to allow the highest similarities at the beginning
+    similarities =  list(sorted(similarities.items(), key=lambda item: item[1], reverse=True))
+    i = 0
+    titles = []
+    while i < 10:
+        titles.append(movie_data.loc[movie_data.id == similarities[i][0]].title)   
+        i+=1
+    return titles
+
+'''
+Collaberation based filtering
+Collaberation based filtering works by calulating how similar users are to one another by using likes, dislikes and user actions
+to calculate similarity
+This block of code will calculate how similar each user is to one another using user rating data
+'''
 #import user ratings
 user_ratings = pd.read_csv('sample_data/ratings_small.csv')
 user_ratings.drop(['timestamp'], axis=1, inplace=True)
@@ -243,8 +320,6 @@ while i < user_ratings.shape[0]:
         errorrate+=1
     i+=1
 
-#this block of code will calculate how similar each user is to one another
-
 #similarity holds the similarity calculations between users
 smilarity = 0
 #best will hold the highest similarity result for the users
@@ -292,97 +367,32 @@ def collabFilter(userId):
     #iteration variable
     i = 0
     #print line describing user input
-    print('User #', userId, ' would like:')
+    titles = []
     #goes through each item on the other users favorite movie list
     while i < len(user_movies[best_matches[userId]]):
         #prints each movie title the best match user likes
-        print(movie_data.loc[movie_data.id == user_movies[best_matches[userId]][i][0]].title.values)
+        titles.append(movie_data.loc[movie_data.id == user_movies[best_matches[userId]][i][0]].title.values)
         i+=1
     #prints other user that list was pulled from
-    print('Using user #', best_matches[userId], ' similar preferences')
-
-#Function to filter movies based on interests entered by the user
-#Function will output the 10 most relevent to the console
-#This function calculates how similar the movies are to the user input by using the ROCK similarity calculation
-#Takes an array of interests as argument
-def interestFilter(interests):
-    #load keyword dataset
-    movie_interests = pd.read_csv('sample_data/keywords.csv')
-    #similarity and difference counts used for similarity calculations
-    simCount = 0
-    diffCount = 0
-    #used to determine if a keyword is excluded in a tuple
-    excluded = True
-    #stores the movie id and similarity measument for each tuple
-    similarities = {}
-    #iteration variable
-    i = 0
-    #used to measure tuple load error rate
-    errorrate = 0
-    
-    #loop through each tuple in the dataset
-    while i < movie_interests.shape[0]:
-        #reset counts
-        diffCount = 0
-        simCount = 0
-        
-        #try to load tuple, and turn it into an array of dictionaries
-        try:
-            movieTuple = [movie_interests.iloc[i][1]]
-            res = [json.loads(idx.replace("'", '"')) for idx in movieTuple]   
-        #if tuple fails to properly load or convert, add to errorrate and proceed to next tuple
-        except:
-            errorrate+=1
-         
-        #iteration variable
-        j = 0
-        
-        #iterate through each user input interest
-        while j < len(interests):
-            #reset excluded variable
-            excluded = True
-            #iteration variable
-            k = 0
-            
-            #loop through each keyword in tuple, comparing them to user input variable
-            while k<len(res[0]):
-                #if user input variable equals keyword in movie, add to similar count and indicate the keyword is not excluded
-                if interests[j].lower() == res[0][k]['name'].lower():
-                    excluded = False
-                    simCount += 1
-                k+=1     
-            
-            #if the keyword was excluded in the tuple, add to difference count
-            if(excluded):
-                diffCount+=1
-
-            j+=1
-        
-        #calculates the similarity between user input and the current tuple
-        simCount=simCount/(k+diffCount)
-        #updates the similarity dictionary with the movie id and the similarity rating
-        similarities.update({movie_interests.id[i]:simCount}) 
-        i+=1
-    #turns the similarity dictionary into a list to be reverse sorted to allow the highest similarities at the beginning
-    similarities =  list(sorted(similarities.items(), key=lambda item: item[1], reverse=True))
-    i = 0
-    titles = []
-    while i < 10:
-        titles.append(movie_data.loc[movie_data.id == similarities[i][0]].title)   
-        i+=1
     return titles
 
-#calls collab filter on user 324 and user 7
-collabFilter(324)
-print()
-collabFilter(7)
-print()
-
+#calls interest filter to get list of recommended movie based on interests
 interests = ['batman', 'fighting', 'robin', 'super powers']
 titles = interestFilter(interests)
 print("Interests: ", interests)
 for title in titles:
     print(title.values)
+print()
+#calls collab filter on user 324 and user 7
+print('User #324 would like:')
+titles = collabFilter(324)
+for title in titles:
+    print(title)
+print()
+print('User #7 would like:')
+titles = collabFilter(7)
+for title in titles:
+    print(title)
 
 
 # In[ ]:
